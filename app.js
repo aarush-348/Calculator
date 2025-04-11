@@ -1,41 +1,57 @@
+let currentInput = "";
 let firstNumber = null;
 let secondNumber = null;
 let operator = null;
+const resultDiv = document.getElementById("result");
 
 const numberButtons = document.querySelectorAll(".calculator__key");
 const operatorButtons = document.querySelectorAll(".calculator__key_operator");
-const resultDiv = document.getElementById("result");
 
 numberButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    const number = parseInt(button.id);
-    if (operator === null) {
-      firstNumber = number;
-    } else {
-      secondNumber = number;
-    }
-    updateDisplay();
+    currentInput += button.id;
+    resultDiv.textContent = currentInput;
   });
 });
 
 operatorButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const value = button.id;
-    if (value === "=") {
-      if (firstNumber !== null && secondNumber !== null && operator !== null) {
-        const result = operate(firstNumber, operator, secondNumber);
-        resultDiv.textContent = result;
 
-        firstNumber = result;
-        secondNumber = null;
-        operator = null;
-      }
-    } else if (value === "clear") {
+    if (value === "clear") {
+      currentInput = "";
       firstNumber = null;
       secondNumber = null;
       operator = null;
       resultDiv.textContent = "";
+      return;
+    }
+
+    if (value === "=") {
+      if (firstNumber !== null && operator !== null && currentInput !== "") {
+        secondNumber = parseFloat(currentInput);
+        const result = operate(firstNumber, operator, secondNumber);
+        resultDiv.textContent = result;
+        firstNumber = result;
+        currentInput = "";
+        secondNumber = null;
+        operator = null;
+      }
+      return;
+    }
+
+    // If operator is clicked
+    if (operator && currentInput !== "") {
+      // Perform previous operation
+      secondNumber = parseFloat(currentInput);
+      const result = operate(firstNumber, operator, secondNumber);
+      firstNumber = result;
+      resultDiv.textContent = result;
+      currentInput = "";
+      operator = value;
     } else {
+      firstNumber = parseFloat(currentInput);
+      currentInput = "";
       operator = value;
     }
   });
@@ -54,34 +70,24 @@ function multiply(a, b) {
 }
 
 function divide(a, b) {
-  if (a === 0 || b === 0) {
-    alert(
-      "Error: Division by zero is undefine,. Please enter a valid divisor."
-    );
-  } else {
-    return a / b;
+  if (b === 0) {
+    alert("Error: Division by zero is undefined.");
+    return "Error";
   }
+  return a / b;
 }
 
-function operate(number1, operator, number2) {
-  switch (operator) {
+function operate(a, op, b) {
+  switch (op) {
     case "+":
-      return add(number1, number2);
+      return add(a, b);
     case "-":
-      return subtract(number1, number2);
+      return subtract(a, b);
     case "*":
-      return multiply(number1, number2);
+      return multiply(a, b);
     case "/":
-      return divide(number1, number2);
+      return divide(a, b);
     default:
       return "Invalid operator";
-  }
-}
-
-function updateDisplay() {
-  if (firstNumber !== null && operator !== null && secondNumber !== null) {
-    resultDiv.textContent = firstNumber + operator + secondNumber;
-  } else if (firstNumber !== null) {
-    resultDiv.textContent = firstNumber;
   }
 }
